@@ -1,0 +1,75 @@
+name: Release
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  create_release:
+    name: Create Github Release
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Output release upload_url to file
+        run: |
+          echo '${{ steps.create_release.outputs.upload_url }}' > release_upload_url
+
+      - name: Upload release_upload_url file as artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_upload_url
+          path: ./release_upload_url
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    needs: create_release
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-latest, windows-latest]
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Get dependencies
+      run: go get -v -t -d ./...
+
+    - name: Download release_upload_url
+      uses: actions/download-artifact@v1
+      with:
+        name: release_upload_url
+        path: ./
+
+    - name: Build
+      run: |
+        go build -i -o bin/git-co-authored-commit-${{runner.os}} github.com/hpcsc/git-co-authored-commit
+
+    - name: Read release_upload_url to environment variable
+      run: echo "::set-env name=RELEASE_UPLOAD_URL::$(cat ./release_upload_url)"
+
+    - name: Attach binary to Github release
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+        asset_path: ./bin/git-co-authored-commit-${{runner.os}}
+        asset_name: git-co-authored-commit-${{runner.os}}
+        asset_content_type: application/octet-stream
