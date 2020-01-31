@@ -16,7 +16,7 @@ func SelectCoAuthor(authors []string) (string, error) {
 	list := widgets.NewList()
 	list.Title = "Select a co-author"
 	list.Rows = authors
-	list.TextStyle = ui.NewStyle(ui.ColorYellow)
+	list.SelectedRowStyle = ui.NewStyle(ui.ColorGreen)
 	list.WrapText = true
 
 	grid := ui.NewGrid()
