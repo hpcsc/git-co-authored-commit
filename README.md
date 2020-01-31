@@ -16,9 +16,17 @@ The shell script above only works in `zsh` and MacOS/Linux environment. This rep
   For Windows, add `.exe` extension to the file, optionally rename it to something shorter, add file location to your `PATH` variable
 - Create `.git-co-authors` file at your home directory (for Windows, it's under `C:/Users/your-user`) or in your `.git` folder in your repository, each line is one co-author, .e.g.
 
-```
+```shell script
 author-1 <author1@email.com>
 author-2 <author2@email.com>
+```
+
+### Note
+
+For Git Bash on Windows, you need to download Windows version of this tool and call this binary using `winpty`:
+
+```shell script
+winpty path/to/git-co-authored-commit {git-commit-message}
 ```
 
 ## Limitation
